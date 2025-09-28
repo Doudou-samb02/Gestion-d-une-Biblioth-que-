@@ -30,8 +30,8 @@ Avant de lancer le projet, assurez-vous d'avoir installé :
 
 1. Ouvrir un terminal dans le dossier `backend`.
 2. Lancer la commande Maven pour démarrer l'application :
--mvn clean install
--puis mvn srping-boot:run
+.-mvn clean install
+.-puis mvn srping-boot:run
 
 ### 2. Frontend (next js)
 
