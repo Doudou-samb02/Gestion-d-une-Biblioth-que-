@@ -1,3 +1,4 @@
+
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -18,7 +19,7 @@ type Livre = {
 const BooksPage = () => {
   const [books, setBooks] = useState<Livre[]>([]);
   const [search, setSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [availabilityFilter, setAvailabilityFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("title");
   const [showFilters, setShowFilters] = useState(false);
@@ -37,9 +38,6 @@ const BooksPage = () => {
     };
     fetchBooks();
   }, []);
-
-  // Catégories uniques
-  const categories = [...new Set(books.map(book => book.categorieNom).filter(Boolean))] as string[];
 
   // Filtrage et recherche
   const filteredBooks = books
@@ -70,8 +68,11 @@ const BooksPage = () => {
       }
     });
 
+  // Catégories uniques
+  const categories = [...new Set(books.map(book => book.categorieNom).filter(Boolean))];
+
   const clearFilters = () => {
-    setSelectedCategory(undefined);
+    setSelectedCategory("");
     setAvailabilityFilter("all");
     setSearch("");
   };
@@ -131,7 +132,10 @@ const BooksPage = () => {
 
               {/* Filtres disponibilité */}
               <div className="flex gap-2">
-                {[{ value: "all", label: "Tous" }, { value: "available", label: "Disponibles" }].map((filter) => (
+                {[
+                  { value: "all", label: "Tous" },
+                  { value: "available", label: "Disponibles" }
+                ].map((filter) => (
                   <button
                     key={filter.value}
                     onClick={() => setAvailabilityFilter(filter.value)}
@@ -180,7 +184,7 @@ const BooksPage = () => {
                   {categories.map((category) => (
                     <button
                       key={category}
-                      onClick={() => setSelectedCategory(selectedCategory === category ? undefined : category)}
+                      onClick={() => setSelectedCategory(selectedCategory === category ? "" : category)}
                       className={`px-3 py-1 rounded-full text-sm transition-colors ${
                         selectedCategory === category
                           ? "bg-amber-500 text-slate-900"
@@ -210,12 +214,14 @@ const BooksPage = () => {
           </div>
         </div>
 
+        {/* Grille de livres compacte */}
         {filteredBooks.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
             {filteredBooks.map((book) => (
               <Link key={book.id} href={`/borrow/${book.id}`}>
                 <div className="group bg-white dark:bg-slate-800 rounded-lg shadow hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 cursor-pointer border border-slate-200 dark:border-slate-700 overflow-hidden">
 
+                  {/* Image */}
                   <div className="relative h-40 overflow-hidden">
                     <img
                       src={book.cover || "/images/default-book-cover.jpg"}
@@ -224,15 +230,18 @@ const BooksPage = () => {
                     />
                   </div>
 
+                  {/* Contenu */}
                   <div className="p-3">
                     <h3 className="font-semibold text-base mb-1 truncate text-blue-900 dark:text-blue-100">{book.titre}</h3>
                     <p className="text-sm text-slate-600 dark:text-slate-400 mb-2 truncate">{book.auteurNom}</p>
 
+                    {/* Catégorie et année */}
                     <div className="flex justify-between items-center text-xs text-slate-500 dark:text-slate-400 mb-2">
                       <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-0.5 rounded-full">{book.categorieNom}</span>
                       {book.anneePublication && <span>{book.anneePublication}</span>}
                     </div>
 
+                    {/* Disponibilité */}
                     <div className={`text-xs font-medium ${book.disponible ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"}`}>
                       {book.disponible ? "Disponible" : "Indisponible"}
                     </div>
