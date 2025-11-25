@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
 
 type Avis = {
   id: number;
@@ -26,28 +27,26 @@ type Livre = {
   notation?: number;
 };
 
-interface BorrowPageProps {
-  params: { id: string };
-}
+export default function BorrowPage() {
+  const params = useParams();
+  const id = params?.id; // id du livre
 
-export default function BorrowPage({ params }: BorrowPageProps) {
   const [book, setBook] = useState<Livre | null>(null);
   const [avis, setAvis] = useState<Avis[]>([]);
   const [userRating, setUserRating] = useState<number>(0);
   const [reviewText, setReviewText] = useState<string>("");
 
-  // Fake user connecté
   const user: User = { id: "1", email: "test@test.com", name: "Utilisateur Test" };
 
-  // Charger le livre et ses avis
   useEffect(() => {
+    if (!id) return;
     async function fetchData() {
       try {
-        const resBook = await fetch(`/api/livres/${params.id}`);
+        const resBook = await fetch(`/api/livres/${id}`);
         const dataBook: Livre = await resBook.json();
         setBook(dataBook);
 
-        const resAvis = await fetch(`/api/livres/${params.id}/avis`);
+        const resAvis = await fetch(`/api/livres/${id}/avis`);
         const dataAvis: Avis[] = await resAvis.json();
         setAvis(dataAvis);
       } catch (err) {
@@ -55,9 +54,8 @@ export default function BorrowPage({ params }: BorrowPageProps) {
       }
     }
     fetchData();
-  }, [params.id]);
+  }, [id]);
 
-  // Ajouter un avis
   const handleSubmitAvis = () => {
     const newAvis: Avis = {
       id: avis.length + 1,
@@ -80,7 +78,6 @@ export default function BorrowPage({ params }: BorrowPageProps) {
         {book.disponible ? "Disponible" : "Indisponible"}
       </p>
 
-      {/* Avis */}
       <section className="mb-4">
         <h2 className="font-semibold mb-2">Avis</h2>
         {avis.length === 0 ? (
@@ -98,7 +95,6 @@ export default function BorrowPage({ params }: BorrowPageProps) {
         )}
       </section>
 
-      {/* Formulaire ajout d'avis */}
       <section>
         <h2 className="font-semibold mb-2">Ajouter un avis</h2>
         <div className="flex flex-col sm:flex-row gap-2 mb-2">
