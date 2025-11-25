@@ -1,3 +1,4 @@
+
 "use client";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
@@ -73,7 +74,7 @@ const BorrowPage = () => {
     loadData();
   }, [params.id, router]);
 
-  // 🔹 Emprunter un livre
+  // 🔹 Nouvelle fonction : appel du backend pour demander un emprunt
   const borrowBook = async () => {
     if (!user) {
       alert("Vous devez être connecté pour emprunter un livre !");
@@ -112,7 +113,6 @@ const BorrowPage = () => {
     }
   };
 
-  // 🔹 Soumettre un avis
   const submitReview = async () => {
     if (!userRating) {
       alert("Veuillez attribuer une note");
@@ -121,9 +121,9 @@ const BorrowPage = () => {
 
     const newAvis: Avis = {
       id: avis.length + 1,
-      utilisateurNom: user?.email || "Utilisateur", // ✅ Correction TypeScript
+      utilisateurNom: user?.name || "Utilisateur",
       note: userRating,
-      commentaire: reviewText || "Pas de commentaire",
+      commentaire: reviewText
     };
 
     setAvis([newAvis, ...avis]);
@@ -179,7 +179,7 @@ const BorrowPage = () => {
         </div>
 
         <div className="space-y-8">
-          {/* Carte livre */}
+          {/* Carte livre avec bouton d'emprunt */}
           <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl overflow-hidden border border-gray-100 dark:border-gray-800">
             <div className="p-8 flex flex-col lg:flex-row gap-8">
               <img
@@ -214,15 +214,17 @@ const BorrowPage = () => {
                   </div>
                 </div>
 
-                <div className="flex gap-1">
-                  {[1,2,3,4,5].map(star => (
-                    <Star
-                      key={star}
-                      size={20}
-                      className={star <= (book.rating || 0) ? "text-yellow-400 fill-current" : "text-gray-300"}
-                    />
-                  ))}
-                  <span className="text-lg font-semibold ml-2">{book.rating?.toFixed(1) || "0.0"}/5.0</span>
+                <div className="flex items-center gap-3">
+                  <div className="flex gap-1">
+                    {[1,2,3,4,5].map(star => (
+                      <Star
+                        key={star}
+                        size={20}
+                        className={star <= (book.rating || 0) ? "text-yellow-400 fill-current" : "text-gray-300"}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-lg font-semibold">{book.rating?.toFixed(1)}/5.0</span>
                 </div>
 
                 <div>
@@ -230,6 +232,7 @@ const BorrowPage = () => {
                   <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{book.description}</p>
                 </div>
 
+                {/* Bouton d'emprunt */}
                 <div className="pt-4">
                   <button
                     disabled={!book.disponible || isBorrowing}
