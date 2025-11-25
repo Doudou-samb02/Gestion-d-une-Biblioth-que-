@@ -1,9 +1,30 @@
 "use client";
+
 import { useState, useEffect } from "react";
 
-type Avis = { id: number; utilisateurNom: string; note: number; commentaire: string };
-type User = { id: string; email: string; name?: string };
-type Livre = { id: number; titre: string; auteurNom?: string; categorieNom?: string; disponible: boolean; cover?: string; anneePublication?: number; notation?: number };
+type Avis = {
+  id: number;
+  utilisateurNom: string;
+  note: number;
+  commentaire: string;
+};
+
+type User = {
+  id: string;
+  email: string;
+  name?: string;
+};
+
+type Livre = {
+  id: number;
+  titre: string;
+  auteurNom?: string;
+  categorieNom?: string;
+  disponible: boolean;
+  cover?: string;
+  anneePublication?: number;
+  notation?: number;
+};
 
 interface BorrowPageProps {
   params: { id: string };
@@ -15,9 +36,10 @@ export default function BorrowPage({ params }: BorrowPageProps) {
   const [userRating, setUserRating] = useState<number>(0);
   const [reviewText, setReviewText] = useState<string>("");
 
-  // Fake user
+  // Fake user connecté
   const user: User = { id: "1", email: "test@test.com", name: "Utilisateur Test" };
 
+  // Charger le livre et ses avis
   useEffect(() => {
     async function fetchData() {
       try {
@@ -29,12 +51,13 @@ export default function BorrowPage({ params }: BorrowPageProps) {
         const dataAvis: Avis[] = await resAvis.json();
         setAvis(dataAvis);
       } catch (err) {
-        console.error(err);
+        console.error("Erreur chargement :", err);
       }
     }
     fetchData();
   }, [params.id]);
 
+  // Ajouter un avis
   const handleSubmitAvis = () => {
     const newAvis: Avis = {
       id: avis.length + 1,
@@ -47,7 +70,7 @@ export default function BorrowPage({ params }: BorrowPageProps) {
     setReviewText("");
   };
 
-  if (!book) return <div>Chargement...</div>;
+  if (!book) return <div className="p-4">Chargement du livre...</div>;
 
   return (
     <div className="container mx-auto p-4">
@@ -57,9 +80,12 @@ export default function BorrowPage({ params }: BorrowPageProps) {
         {book.disponible ? "Disponible" : "Indisponible"}
       </p>
 
+      {/* Avis */}
       <section className="mb-4">
         <h2 className="font-semibold mb-2">Avis</h2>
-        {avis.length === 0 ? <p>Aucun avis pour le moment.</p> : (
+        {avis.length === 0 ? (
+          <p>Aucun avis pour le moment.</p>
+        ) : (
           <ul>
             {avis.map((a) => (
               <li key={a.id} className="border p-2 rounded mb-2">
@@ -72,24 +98,27 @@ export default function BorrowPage({ params }: BorrowPageProps) {
         )}
       </section>
 
+      {/* Formulaire ajout d'avis */}
       <section>
         <h2 className="font-semibold mb-2">Ajouter un avis</h2>
-        <input
-          type="number"
-          min={0}
-          max={5}
-          value={userRating}
-          onChange={(e) => setUserRating(Number(e.target.value))}
-          placeholder="Note (0-5)"
-          className="border rounded px-2 py-1 mr-2 mb-2"
-        />
-        <input
-          type="text"
-          value={reviewText}
-          onChange={(e) => setReviewText(e.target.value)}
-          placeholder="Commentaire"
-          className="border rounded px-2 py-1 mr-2 mb-2"
-        />
+        <div className="flex flex-col sm:flex-row gap-2 mb-2">
+          <input
+            type="number"
+            min={0}
+            max={5}
+            value={userRating}
+            onChange={(e) => setUserRating(Number(e.target.value))}
+            placeholder="Note (0-5)"
+            className="border rounded px-2 py-1"
+          />
+          <input
+            type="text"
+            value={reviewText}
+            onChange={(e) => setReviewText(e.target.value)}
+            placeholder="Commentaire"
+            className="border rounded px-2 py-1 flex-1"
+          />
+        </div>
         <button
           onClick={handleSubmitAvis}
           className="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700 transition-colors"
