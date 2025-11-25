@@ -1,7 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Search, Star, BookOpen, Clock, Filter, X } from "lucide-react";
+import Image from "next/image";
+import { Search, BookOpen, Filter, X } from "lucide-react";
 
 type Livre = {
   id: number;
@@ -40,10 +41,11 @@ const BooksPage = () => {
 
   // Filtrage et recherche
   const filteredBooks = books
-    .filter((book) =>
-      book.titre.toLowerCase().includes(search.toLowerCase()) ||
-      (book.auteurNom || "").toLowerCase().includes(search.toLowerCase()) ||
-      (book.categorieNom || "").toLowerCase().includes(search.toLowerCase())
+    .filter(
+      (book) =>
+        book.titre.toLowerCase().includes(search.toLowerCase()) ||
+        (book.auteurNom || "").toLowerCase().includes(search.toLowerCase()) ||
+        (book.categorieNom || "").toLowerCase().includes(search.toLowerCase())
     )
     .filter((book) =>
       selectedCategory ? book.categorieNom === selectedCategory : true
@@ -68,7 +70,9 @@ const BooksPage = () => {
     });
 
   // Catégories uniques
-  const categories = [...new Set(books.map(book => book.categorieNom).filter(Boolean))];
+  const categories = [
+    ...new Set(books.map((book) => book.categorieNom).filter(Boolean)),
+  ];
 
   const clearFilters = () => {
     setSelectedCategory("");
@@ -78,23 +82,35 @@ const BooksPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800">
-
       {/* Hero Section */}
       <section className="relative py-20 text-white overflow-hidden">
         <div className="absolute inset-0">
-          <img src="/images/hero-bg.jpg" alt="Bibliothèque" className="w-full h-full object-cover"/>
-          <div className="absolute inset-0 bg-blue-900/60"></div>
+          <Image
+            src="/images/hero-bg.jpg"
+            alt="Bibliothèque"
+            fill
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-blue-900/60" />
         </div>
         <div className="relative container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">📚 Notre Bibliothèque</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
+            📚 Notre Bibliothèque
+          </h1>
           <p className="text-lg md:text-xl mb-6 max-w-3xl mx-auto opacity-95">
-            Découvrez notre collection complète de livres. Explorez, rêvez, et trouvez votre prochaine lecture.
+            Découvrez notre collection complète de livres. Explorez, rêvez, et
+            trouvez votre prochaine lecture.
           </p>
           <div className="grid grid-cols-3 gap-6 max-w-2xl mx-auto mt-8">
-            {[{ number: books.length, label: "Livres" },
-              { number: new Set(books.map(b => b.auteurNom)).size, label: "Auteurs" },
-              { number: categories.length, label: "Genres" }].map((stat, i) => (
-              <div key={i} className="text-center p-3 bg-white/10 rounded-xl backdrop-blur-sm border border-white/20">
+            {[
+              { number: books.length, label: "Livres" },
+              { number: new Set(books.map((b) => b.auteurNom)).size, label: "Auteurs" },
+              { number: categories.length, label: "Genres" },
+            ].map((stat, i) => (
+              <div
+                key={i}
+                className="text-center p-3 bg-white/10 rounded-xl backdrop-blur-sm border border-white/20"
+              >
                 <div className="text-2xl font-bold text-white">{stat.number}</div>
                 <div className="text-xs opacity-90 text-amber-100">{stat.label}</div>
               </div>
@@ -106,10 +122,12 @@ const BooksPage = () => {
       {/* Barre de recherche et filtres */}
       <section className="container mx-auto px-4 -mt-10 relative z-10">
         <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-4 mb-6 border border-slate-200 dark:border-slate-700">
-
           {/* Barre de recherche */}
           <div className="relative mb-4">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" size={20} />
+            <Search
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500"
+              size={20}
+            />
             <input
               type="text"
               placeholder="Rechercher un livre, un auteur, un genre..."
@@ -133,7 +151,7 @@ const BooksPage = () => {
               <div className="flex gap-2">
                 {[
                   { value: "all", label: "Tous" },
-                  { value: "available", label: "Disponibles" }
+                  { value: "available", label: "Disponibles" },
                 ].map((filter) => (
                   <button
                     key={filter.value}
@@ -183,7 +201,11 @@ const BooksPage = () => {
                   {categories.map((category) => (
                     <button
                       key={category}
-                      onClick={() => setSelectedCategory(selectedCategory === category ? "" : category)}
+                      onClick={() =>
+                        setSelectedCategory(
+                          selectedCategory === category ? "" : category ?? ""
+                        )
+                      }
                       className={`px-3 py-1 rounded-full text-sm transition-colors ${
                         selectedCategory === category
                           ? "bg-amber-500 text-slate-900"
@@ -208,7 +230,7 @@ const BooksPage = () => {
               Livres {selectedCategory && `- ${selectedCategory}`}
             </h2>
             <p className="text-slate-600 dark:text-slate-400 text-sm">
-              {filteredBooks.length} livre{filteredBooks.length > 1 ? "s" : ""} trouvé{filteredBooks.length > 1 ? "s" : ""}
+              {filteredBooks.length} livre{filteredBooks.length !== 1 ? "s" : ""} trouvé{filteredBooks.length !== 1 ? "s" : ""}
             </p>
           </div>
         </div>
@@ -219,29 +241,39 @@ const BooksPage = () => {
             {filteredBooks.map((book) => (
               <Link key={book.id} href={`/borrow/${book.id}`}>
                 <div className="group bg-white dark:bg-slate-800 rounded-lg shadow hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 cursor-pointer border border-slate-200 dark:border-slate-700 overflow-hidden">
-
                   {/* Image */}
-                  <div className="relative h-40 overflow-hidden">
-                    <img
+                  <div className="relative h-40 w-full overflow-hidden">
+                    <Image
                       src={book.cover || "/images/default-book-cover.jpg"}
                       alt={book.titre}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   </div>
 
                   {/* Contenu */}
                   <div className="p-3">
-                    <h3 className="font-semibold text-base mb-1 truncate text-blue-900 dark:text-blue-100">{book.titre}</h3>
+                    <h3 className="font-semibold text-base mb-1 truncate text-blue-900 dark:text-blue-100">
+                      {book.titre}
+                    </h3>
                     <p className="text-sm text-slate-600 dark:text-slate-400 mb-2 truncate">{book.auteurNom}</p>
 
                     {/* Catégorie et année */}
                     <div className="flex justify-between items-center text-xs text-slate-500 dark:text-slate-400 mb-2">
-                      <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-0.5 rounded-full">{book.categorieNom}</span>
+                      <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-0.5 rounded-full">
+                        {book.categorieNom}
+                      </span>
                       {book.anneePublication && <span>{book.anneePublication}</span>}
                     </div>
 
                     {/* Disponibilité */}
-                    <div className={`text-xs font-medium ${book.disponible ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"}`}>
+                    <div
+                      className={`text-xs font-medium ${
+                        book.disponible
+                          ? "text-green-600 dark:text-green-400"
+                          : "text-amber-600 dark:text-amber-400"
+                      }`}
+                    >
                       {book.disponible ? "Disponible" : "Indisponible"}
                     </div>
                   </div>
@@ -254,7 +286,10 @@ const BooksPage = () => {
             <BookOpen size={40} className="mx-auto text-slate-300 dark:text-slate-600 mb-3" />
             <h3 className="text-base font-semibold text-slate-600 dark:text-slate-400 mb-2">Aucun livre trouvé</h3>
             <p className="text-slate-500 dark:text-slate-500 mb-4 text-sm">Essayez de modifier vos critères de recherche ou de filtrage</p>
-            <button onClick={clearFilters} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm">
+            <button
+              onClick={clearFilters}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+            >
               Réinitialiser les filtres
             </button>
           </div>
