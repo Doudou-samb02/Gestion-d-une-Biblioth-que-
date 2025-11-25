@@ -3,8 +3,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 import { useState, useEffect } from "react";
 import {
-  Calendar, User, BookOpen, ArrowLeft,
-  Star, MessageCircle, CheckCircle, ChevronRight
+  User, BookOpen, ArrowLeft, Star, MessageCircle, CheckCircle, ChevronRight
 } from "lucide-react";
 
 interface Livre {
@@ -41,26 +40,29 @@ const BorrowPage = () => {
   const [book, setBook] = useState<Livre | null>(null);
   const [avis, setAvis] = useState<Avis[]>([]);
   const [similarBooks, setSimilarBooks] = useState<Livre[]>([]);
-  const [userRating, setUserRating] = useState(0);
-  const [reviewText, setReviewText] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
-  const [isBorrowing, setIsBorrowing] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [userRating, setUserRating] = useState<number>(0);
+  const [reviewText, setReviewText] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isBorrowing, setIsBorrowing] = useState<boolean>(false);
+  const [showSuccess, setShowSuccess] = useState<boolean>(false);
 
   useEffect(() => {
+    if (!params.id) return;
+
     const loadData = async () => {
       setIsLoading(true);
       try {
         const resBook = await fetch(`http://localhost:8080/api/livres/${params.id}`);
+        if (!resBook.ok) throw new Error("Livre non trouvé");
         const dataBook: Livre = await resBook.json();
         setBook(dataBook);
 
         const resAvis = await fetch(`http://localhost:8080/api/livres/${params.id}/avis`);
-        const dataAvis: Avis[] = await resAvis.json();
+        const dataAvis: Avis[] = resAvis.ok ? await resAvis.json() : [];
         setAvis(dataAvis);
 
         const resSimilar = await fetch(`http://localhost:8080/api/livres/categorie/${dataBook.categorieId}`);
-        const dataSimilar: Livre[] = await resSimilar.json();
+        const dataSimilar: Livre[] = resSimilar.ok ? await resSimilar.json() : [];
         setSimilarBooks(dataSimilar.filter(b => b.id !== dataBook.id));
       } catch (error) {
         console.error(error);
@@ -73,7 +75,6 @@ const BorrowPage = () => {
     loadData();
   }, [params.id, router]);
 
-  // 🔹 Nouvelle fonction : appel du backend pour demander un emprunt
   const borrowBook = async () => {
     if (!user) {
       alert("Vous devez être connecté pour emprunter un livre !");
@@ -95,9 +96,6 @@ const BorrowPage = () => {
       });
 
       if (res.ok) {
-        const data = await res.json();
-        console.log("✅ Emprunt demandé :", data);
-
         setShowSuccess(true);
         setTimeout(() => setShowSuccess(false), 5000);
       } else {
@@ -120,9 +118,9 @@ const BorrowPage = () => {
 
     const newAvis: Avis = {
       id: avis.length + 1,
-      utilisateurNom: user?.name || "Utilisateur",
+      utilisateurNom: user?.username || user?.email || "Utilisateur",
       note: userRating,
-      commentaire: reviewText
+      commentaire: reviewText || "Pas de commentaire",
     };
 
     setAvis([newAvis, ...avis]);
@@ -178,11 +176,11 @@ const BorrowPage = () => {
         </div>
 
         <div className="space-y-8">
-          {/* Carte livre avec bouton d'emprunt */}
+          {/* Carte livre */}
           <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl overflow-hidden border border-gray-100 dark:border-gray-800">
             <div className="p-8 flex flex-col lg:flex-row gap-8">
               <img
-                src={book.cover}
+                src={book.cover || "/placeholder.png"}
                 alt={book.titre}
                 className="w-full lg:w-80 h-96 lg:h-auto rounded-2xl object-cover mx-auto lg:mx-0"
               />
@@ -200,7 +198,6 @@ const BorrowPage = () => {
                   }`}>
                     {book.disponible ? "Disponible" : "Indisponible"}
                   </span>
-
                   <div className="flex items-center gap-4 text-gray-600 dark:text-gray-400">
                     <span className="flex items-center gap-2">
                       <BookOpen size={18} />
@@ -213,25 +210,22 @@ const BorrowPage = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <div className="flex gap-1">
-                    {[1,2,3,4,5].map(star => (
-                      <Star
-                        key={star}
-                        size={20}
-                        className={star <= (book.rating || 0) ? "text-yellow-400 fill-current" : "text-gray-300"}
-                      />
-                    ))}
-                  </div>
+                <div className="flex gap-1">
+                  {[1,2,3,4,5].map(star => (
+                    <Star
+                      key={star}
+                      size={20}
+                      className={star <= (book.rating || 0) ? "text-yellow-400 fill-current" : "text-gray-300"}
+                    />
+                  ))}
                   <span className="text-lg font-semibold">{book.rating?.toFixed(1)}/5.0</span>
                 </div>
 
                 <div>
                   <h3 className="text-xl font-semibold mb-3">Description</h3>
-                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{book.description}</p>
+                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{book.description || "Pas de description disponible."}</p>
                 </div>
 
-                {/* Bouton d'emprunt */}
                 <div className="pt-4">
                   <button
                     disabled={!book.disponible || isBorrowing}
@@ -297,21 +291,21 @@ const BorrowPage = () => {
             )}
 
             <div className="space-y-6">
-              {avis.map(avis => (
-                <div key={avis.id} className="p-6 bg-gray-50 dark:bg-gray-800 rounded-2xl hover:shadow-lg transition-shadow duration-200">
+              {avis.map(a => (
+                <div key={a.id} className="p-6 bg-gray-50 dark:bg-gray-800 rounded-2xl hover:shadow-lg transition-shadow duration-200">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="font-semibold">{avis.utilisateurNom}</span>
+                    <span className="font-semibold">{a.utilisateurNom}</span>
                     <div className="flex items-center gap-1 bg-white dark:bg-gray-700 px-3 py-1 rounded-full">
                       {[1,2,3,4,5].map(star => (
                         <Star
                           key={star}
                           size={16}
-                          className={star <= avis.note ? "text-yellow-400 fill-current" : "text-gray-300"}
+                          className={star <= a.note ? "text-yellow-400 fill-current" : "text-gray-300"}
                         />
                       ))}
                     </div>
                   </div>
-                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{avis.commentaire}</p>
+                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{a.commentaire}</p>
                 </div>
               ))}
             </div>
@@ -329,7 +323,7 @@ const BorrowPage = () => {
                     onClick={() => router.push(`/books/${livre.id}`)}
                   >
                     <img
-                      src={livre.cover}
+                      src={livre.cover || "/placeholder.png"}
                       alt={livre.titre}
                       className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                     />
