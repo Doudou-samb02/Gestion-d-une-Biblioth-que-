@@ -52,7 +52,6 @@ const BorrowPage = () => {
       setIsLoading(true);
       try {
         const resBook = await fetch(`http://localhost:8080/api/livres/${params.id}`);
-        if (!resBook.ok) throw new Error("Livre introuvable");
         const dataBook: Livre = await resBook.json();
         setBook(dataBook);
 
@@ -74,15 +73,13 @@ const BorrowPage = () => {
     loadData();
   }, [params.id, router]);
 
-  // 🔹 Nouvelle fonction : appel du backend pour demander un emprunt
+  // 🔹 Emprunter un livre
   const borrowBook = async () => {
     if (!user) {
       alert("Vous devez être connecté pour emprunter un livre !");
       router.push("/login");
       return;
     }
-
-    if (!book) return;
 
     try {
       setIsBorrowing(true);
@@ -94,7 +91,7 @@ const BorrowPage = () => {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ livreId: book.id }),
+        body: JSON.stringify({ livreId: book?.id }),
       });
 
       if (res.ok) {
@@ -115,6 +112,7 @@ const BorrowPage = () => {
     }
   };
 
+  // 🔹 Soumettre un avis
   const submitReview = async () => {
     if (!userRating) {
       alert("Veuillez attribuer une note");
@@ -123,8 +121,7 @@ const BorrowPage = () => {
 
     const newAvis: Avis = {
       id: avis.length + 1,
-      // 🔹 Correction TypeScript : utilisateurNom ne dépend que de user.name
-      utilisateurNom: user?.name || "Utilisateur",
+      utilisateurNom: user?.email || "Utilisateur", // ✅ Correction TypeScript
       note: userRating,
       commentaire: reviewText || "Pas de commentaire",
     };
@@ -182,7 +179,7 @@ const BorrowPage = () => {
         </div>
 
         <div className="space-y-8">
-          {/* Carte livre avec bouton d'emprunt */}
+          {/* Carte livre */}
           <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl overflow-hidden border border-gray-100 dark:border-gray-800">
             <div className="p-8 flex flex-col lg:flex-row gap-8">
               <img
@@ -217,17 +214,15 @@ const BorrowPage = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <div className="flex gap-1">
-                    {[1,2,3,4,5].map(star => (
-                      <Star
-                        key={star}
-                        size={20}
-                        className={star <= (book.rating || 0) ? "text-yellow-400 fill-current" : "text-gray-300"}
-                      />
-                    ))}
-                  </div>
-                  <span className="text-lg font-semibold">{book.rating?.toFixed(1)}/5.0</span>
+                <div className="flex gap-1">
+                  {[1,2,3,4,5].map(star => (
+                    <Star
+                      key={star}
+                      size={20}
+                      className={star <= (book.rating || 0) ? "text-yellow-400 fill-current" : "text-gray-300"}
+                    />
+                  ))}
+                  <span className="text-lg font-semibold ml-2">{book.rating?.toFixed(1) || "0.0"}/5.0</span>
                 </div>
 
                 <div>
@@ -235,7 +230,6 @@ const BorrowPage = () => {
                   <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{book.description}</p>
                 </div>
 
-                {/* Bouton d'emprunt */}
                 <div className="pt-4">
                   <button
                     disabled={!book.disponible || isBorrowing}
