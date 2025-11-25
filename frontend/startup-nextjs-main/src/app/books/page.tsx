@@ -1,3 +1,4 @@
+
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -67,14 +68,8 @@ const BooksPage = () => {
       }
     });
 
-  // Catégories uniques avec typage sûr
-  const categories: string[] = [
-    ...new Set(
-      books
-        .map((book) => book.categorieNom)
-        .filter((c): c is string => !!c) // on s'assure que ce sont des strings
-    ),
-  ];
+  // Catégories uniques
+  const categories = [...new Set(books.map(book => book.categorieNom).filter(Boolean))];
 
   const clearFilters = () => {
     setSelectedCategory("");
@@ -98,7 +93,7 @@ const BooksPage = () => {
           </p>
           <div className="grid grid-cols-3 gap-6 max-w-2xl mx-auto mt-8">
             {[{ number: books.length, label: "Livres" },
-              { number: new Set(books.map(b => b.auteurNom).filter(Boolean)).size, label: "Auteurs" },
+              { number: new Set(books.map(b => b.auteurNom)).size, label: "Auteurs" },
               { number: categories.length, label: "Genres" }].map((stat, i) => (
               <div key={i} className="text-center p-3 bg-white/10 rounded-xl backdrop-blur-sm border border-white/20">
                 <div className="text-2xl font-bold text-white">{stat.number}</div>
@@ -137,7 +132,10 @@ const BooksPage = () => {
 
               {/* Filtres disponibilité */}
               <div className="flex gap-2">
-                {[{ value: "all", label: "Tous" }, { value: "available", label: "Disponibles" }].map((filter) => (
+                {[
+                  { value: "all", label: "Tous" },
+                  { value: "available", label: "Disponibles" }
+                ].map((filter) => (
                   <button
                     key={filter.value}
                     onClick={() => setAvailabilityFilter(filter.value)}
@@ -222,6 +220,8 @@ const BooksPage = () => {
             {filteredBooks.map((book) => (
               <Link key={book.id} href={`/borrow/${book.id}`}>
                 <div className="group bg-white dark:bg-slate-800 rounded-lg shadow hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 cursor-pointer border border-slate-200 dark:border-slate-700 overflow-hidden">
+
+                  {/* Image */}
                   <div className="relative h-40 overflow-hidden">
                     <img
                       src={book.cover || "/images/default-book-cover.jpg"}
@@ -229,13 +229,19 @@ const BooksPage = () => {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   </div>
+
+                  {/* Contenu */}
                   <div className="p-3">
                     <h3 className="font-semibold text-base mb-1 truncate text-blue-900 dark:text-blue-100">{book.titre}</h3>
                     <p className="text-sm text-slate-600 dark:text-slate-400 mb-2 truncate">{book.auteurNom}</p>
+
+                    {/* Catégorie et année */}
                     <div className="flex justify-between items-center text-xs text-slate-500 dark:text-slate-400 mb-2">
                       <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-0.5 rounded-full">{book.categorieNom}</span>
                       {book.anneePublication && <span>{book.anneePublication}</span>}
                     </div>
+
+                    {/* Disponibilité */}
                     <div className={`text-xs font-medium ${book.disponible ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"}`}>
                       {book.disponible ? "Disponible" : "Indisponible"}
                     </div>
