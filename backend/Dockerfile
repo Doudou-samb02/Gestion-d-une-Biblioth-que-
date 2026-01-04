@@ -10,11 +10,12 @@ WORKDIR /app
 # Copie tout le backend
 COPY . .
 
-# Build du projet Spring Boot
-RUN mvn clean package -DskipTests
+# Build et renommer le .jar pour éviter les accents
+RUN mvn clean package -DskipTests \
+    && mv target/bibliotheque-0.0.1-SNAPSHOT.jar.original target/bibliotheque-demo.jar
 
 # Expose le port Spring Boot par défaut
 EXPOSE 8080
 
 # Lancer le jar avec le profil "demo" (H2)
-CMD ["java", "-jar", "target/Gestion-d-une-Bibliothèque-0.0.1-SNAPSHOT.jar", "--spring.profiles.active=demo"]
+CMD ["java", "-jar", "target/bibliotheque-demo.jar", "--spring.profiles.active=demo"]
