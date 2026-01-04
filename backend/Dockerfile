@@ -1,9 +1,5 @@
-# ==========================
-# Dockerfile pour Spring Boot avec H2 (démo)
-# ==========================
-
-# Utilise une image OpenJDK 17 légère et stable
-FROM openjdk:17-jdk-slim
+# === Image officielle Eclipse Temurin OpenJDK 17 ===
+FROM eclipse-temurin:17-jdk
 
 # Crée un dossier pour l'app
 WORKDIR /app
