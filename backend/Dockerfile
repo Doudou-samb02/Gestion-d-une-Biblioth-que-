@@ -12,8 +12,12 @@ WORKDIR /app
 # Copie tout le backend dans le container
 COPY . .
 
-# Build du projet Spring Boot (skip tests pour aller plus vite)
+# Build du projet Spring Boot
 RUN mvn clean package -DskipTests
+
+# Renommer le jar pour éviter les problèmes
+RUN mv target/'Gestion-d-une-Bibliothèque-0.0.1-SNAPSHOT.jar' target/bibliotheque.jar
+
 
 # Expose le port Spring Boot par défaut
 EXPOSE 8080
