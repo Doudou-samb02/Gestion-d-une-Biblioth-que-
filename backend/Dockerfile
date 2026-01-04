@@ -1,26 +1,23 @@
-# ==========================
-# Image officielle OpenJDK 17
-# ==========================
+# ===== Image de base =====
 FROM eclipse-temurin:17-jdk
 
-# Installer Maven
-RUN apt-get update && apt-get install -y maven
+# ===== Installer Maven =====
+RUN apt-get update && apt-get install -y maven && rm -rf /var/lib/apt/lists/*
 
-# Crée un dossier pour l'app
+# ===== Créer le dossier de travail =====
 WORKDIR /app
 
-# Copie tout le backend dans le container
+# ===== Copier tout le backend =====
 COPY . .
 
-# Build du projet Spring Boot
+# ===== Build du projet Spring Boot =====
 RUN mvn clean package -DskipTests
 
-# Renommer le jar pour éviter les problèmes
-RUN mv target/'Gestion-d-une-Bibliothèque-0.0.1-SNAPSHOT.jar' target/bibliotheque.jar
+# ===== Vérifier le jar généré (optionnel pour debug) =====
+RUN ls -l target/
 
-
-# Expose le port Spring Boot par défaut
+# ===== Exposer le port Spring Boot =====
 EXPOSE 8080
 
-# Lancer le jar avec le profil "demo"
-CMD ["sh", "-c", "java -jar target/'Gestion-d-une-Bibliothèque-0.0.1-SNAPSHOT.jar' --spring.profiles.active=demo"]
+# ===== Lancer l'application avec le profil "demo" =====
+CMD ["sh", "-c", "java -jar target/$(ls target | grep SNAPSHOT.jar | head -n 1) --spring.profiles.active=demo"]
