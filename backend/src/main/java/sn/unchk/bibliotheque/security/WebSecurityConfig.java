@@ -56,6 +56,7 @@ public class WebSecurityConfig {
                 .cors(cors -> {}) // Use CORS bean
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/", "/health").permitAll()
                         // Endpoints publics (auth, GETs)
                         .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.GET,
